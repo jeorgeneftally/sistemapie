@@ -1,0 +1,7 @@
+.container-fluid{
+    height: 100vh;
+    background-image: url('http://parra.chillan.ubiobio.cl:8090/~jcea/manos');
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
+}

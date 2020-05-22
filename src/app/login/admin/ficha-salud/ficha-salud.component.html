@@ -1,0 +1,139 @@
+<div class="container-fluid">
+  <!--migas de pan-->
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a [routerLink]="['/Inicio']">Inicio</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Fichas de Salud</li>
+    </ol>
+  </nav>
+  <!--fin migas de pan-->
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <!--seccion de input para filtrar los productos-->
+        <div class="col-md-2"></div>
+        <div class="col-md-4">
+        </div>
+        <div class="col-md-3">
+          <select class="form-control" [(ngModel)]="valor" (change)="setValue()">
+            <option value="Activo">Activos</option>
+            <option value="Inactivo">Inactivos</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-primary btn-sm" (click)="mostrarModal()"><i class="fas fa-pen-square"></i> 
+            Registrar Ficha
+          </button>
+        </div>
+      </div>
+      <br>
+      <!--ya no debemos hacer property binding, dado que utilizará los arreglos del servicio-->
+      <!--<app-product-list [datos]="filterProducts"></app-product-list>-->
+      <div class="card border-primary mb-3 text-center">
+        <div class="card-header"><b>Lista de Fichas de salud</b></div>
+        <div class="card-body text-primary">
+          <div class="table-responsive">
+            <!--llamamos a los nuuevos arreglos declarados en productService, y condicionamos-->
+            <table class="table">
+              <thead>
+                <!-- esto indica el cabecero de la tabla-->
+                <tr>
+                  <th>#</th>
+                  <th>Nombre Estudiante</th>
+                  <th>Sistema</th>
+                  <th>Medicamentos</th>
+                  <th>Observaciones</th>
+                  <th *ngIf="identity.role =='Role_Admin'" >Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!--aqui ocupamos a los arreglos del servicio de productos-->
+                <tr *ngFor="let i of mostrarfichas | paginate: config ;let indice=index">
+                  <td>{{indice+1}}</td>
+                  <td>{{i.estudiante.nombre +" "+i.estudiante.apellido}}</td>
+                  <td>{{i.nombre_sistema}}</td>
+                  <td>{{i.medicamentos}}</td>
+                  <td>{{i.observacion}}</td>
+                  <td>
+                    <!--aqui se obtienen los datos de arreglo mediante indice y atrivbuto-->
+                    <button *ngIf="identity.role =='Role_Admin'" class="btn btn-primary btn-sm"
+                      (click)="mostrarModal(i.id,i.nombre_sistema,i.medicamentos,i.observacion,i.estudiante_id)">
+                      <i class="fas fa-pencil-alt"></i> Ver/Editar
+                    </button>
+                    &nbsp;
+                    <button *ngIf="identity.role =='Role_Admin' && i.estado=='Activo'"  class="btn btn-danger btn-sm" (click)="disableFicha(i.id)">
+                      <i class="fas fa-ban"></i> Deshabilitar
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+              <!--FIN DE BODY-->
+            </table>
+            <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+          </div>
+          <!--FIN DE SECCION TABLA TABLA-->
+        </div>
+        <!--FIN HEADER CARD-->
+      </div>
+      <!--FIN BORDER CARD-->
+      <!--modal para registrar/actualizar marca-->
+      <div class="modal" id="exampleModal" [ngStyle]="{'display':activarModal}" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content" style="background: #dddddd">
+            <div class="modal-header">
+              <div class="row mx-5">
+                <h5 class="modal-title">Registro de Ficha de salud</h5>
+              </div>
+              <button (click)="ocultarModal()" type="button" class="close" data-dismiss="modal">
+                &times;
+              </button>
+            </div>
+            <div class="modal-body">
+              <!--formulario para crear/actualizar modelo-->
+              <div class="row mx-5">
+                <form class="col-md-10 ml-0 pl-0" #modelNew="ngForm" (ngSubmit)="onSubmit(modelNew)">
+                  <div class="form-group">
+                    <label for="name">Nombre de sistema de salud</label>
+                    <input type="text" name="nombre_sistema" #nombre_sistema="ngModel"
+                      [(ngModel)]="ficha.nombre_sistema" class="form-control" required>
+                    <small *ngIf="!nombre_sistema.valid && nombre_sistema.touched" class="invalid-feedback d-block">
+                      Debe ingresar el nombre del sistema
+                    </small>
+                  </div>
+                  <div class="form-group">
+                    <label for="name">Medicamentos</label>
+                    <input type="text" name="medicamentos" #medicamentos="ngModel" [(ngModel)]="ficha.medicamentos"
+                      class="form-control" required>
+                    <small *ngIf="!medicamentos.valid && medicamentos.touched" class="invalid-feedback d-block">
+                      Debe ingresar el medicamentos
+                    </small>
+                  </div>
+                  <div class="form-group">
+                    <label for="estudiante_id">Estudiante</label>
+                    <select name="estudiante_id" class="form-control" id="estudiante_id" #estudiante_id="ngModel"
+                      [(ngModel)]="ficha.estudiante_id">
+                      <option *ngFor="let i of estudiantes" value="{{i.id}}">{{i.nombre +" "+ i.apellido}}</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="name">Observaciones</label>
+                    <textarea type="text" rows="4" cols="50" name="observacion" #observacion="ngModel"
+                      [(ngModel)]="ficha.observacion" class="form-control" required></textarea>
+                    <small *ngIf="!observacion.valid && observacion.touched" class="invalid-feedback d-block">
+                      Debe ingresar las observaciones
+                    </small>
+                  </div>
+
+                  <input  value="Guardar" type="submit" class="btn btn-success" [disabled]="modelNew.invalid">
+                </form>
+                <!--fin formulario para crear/actualizar ficha de salud-->
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" (click)="ocultarModal()" class="btn btn-danger">Cerrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--fin modal para registrar/actualizar ficha-->
+    </div>

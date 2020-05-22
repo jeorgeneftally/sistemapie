@@ -1,0 +1,768 @@
+<div class="container-fluid">
+<!--migas de pan-->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a [routerLink]="['/Inicio']">Inicio</a></li>
+    <li class="breadcrumb-item"><a [routerLink]="['/Inicio/Estudiantes']">Estudiantes</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Detalle</li>
+  </ol>
+</nav>
+<!--fin migas de pan-->
+<div class="card">
+  <div class="card-header">
+    <h5 class="text-center"><b>{{ this.estudiante.nombre +' '+this.estudiante.apellido}}</b>
+    </h5>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-4">
+        <img *ngIf="this.estudiante.imagen_perfil" src="{{url+'estudiante/image/'+this.estudiante.imagen_perfil}}"
+          class="avatar_navbar" height="350px" class="card-img">
+
+        <img *ngIf="!this.estudiante.imagen_perfil" src="assets/perfil.png" class="avatar_navbar"
+          class="card-img" height="350px">
+      </div>
+      <div class="col-md-6">
+        <b>Rut: </b>{{this.estudiante.rut}} <br>
+        <b>Nombres: </b>{{this.estudiante.nombre}} <br>
+        <b>Apellidos: </b>{{this.estudiante.apellido}} <br>
+        <b>Fecha Nacimiento: </b>{{this.estudiante.fecha_nacimiento | date:'fullDate'}} <br>
+        <b>Dirección: </b>{{this.estudiante.direccion}} <br>
+        <b>Curso: </b>{{this.estudiante.curso}} <br>
+        <b>Personas que vive: </b>{{this.estudiante.personas_vive}} <br>
+        <b>Fecha de registro:</b> {{this.estudiante.created_at | date:'dd-MM-yyyy, h:mm:ss' }} <br>
+        <b>Última Actualización:</b> {{this.estudiante.updated_at | date:'dd-MM-yyyy, h:mm:ss' }} <br>
+      </div>
+      <div class="col-md-2">
+        <button type="button" class="btn btn-success" (click)="mostrarModal()">Generar Ficha</button>
+      </div>
+    </div>
+    <hr>
+    <div class="card-body">
+      <div class="row ">
+        <div id="principal" class="col-md-12 align-self-center">
+          <div class="row ">
+            <div class="col-md-10   offset-md-1">
+       
+              <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-secondary active" (click)="mostrarApoderados();">
+                  <input type="radio" name="options" id="option1" autocomplete="off" checked>Apoderados
+                </label>
+                <label class="btn btn-secondary" (click)="mostrarEntrevistas();">
+                  <input type="radio" name="options" id="option2" autocomplete="off">Entrevistas
+                </label>
+                <label class="btn btn-secondary" (click)="mostrarDiagnosticos();">
+                  <input type="radio" name="options" id="option3" autocomplete="off">Diagnósticos
+                </label>    
+                <label class="btn btn-secondary" (click)="mostrarDocumentos();">
+                  <input type="radio" name="options" id="option4" autocomplete="off">Documentos
+                </label>
+                <label class="btn btn-secondary" (click)="mostrarFichas();">
+                  <input type="radio" name="options" id="option5" autocomplete="off">
+                  Ficha Salud
+                </label>
+                <label class="btn btn-secondary" (click)="mostrarHistorial();">
+                  <input type="radio" name="options" id="option6" autocomplete="off"> Historial Académico
+                </label>
+            </div>
+            </div>
+          </div>
+          <div id="Apoderados" class="col-md" style="display:normal; ">
+            <h5 *ngIf="c1==0" class="card-title text-center mt-5"><b>No Hay Apoderados</b> </h5>
+            <div class="row mb-2 mt-3">
+              <div class="col-md-6" *ngFor="let i of apoderados">
+                <div class="card">
+                  <div class="card-header bg-light">
+                    <h5 class="card-title text-center"><i class="fas fa-user-shield"></i><b>
+                        {{i.nombre +' '+i.apellido}}</b> </h5>
+                    <hr>
+                    <div class="card-body">
+                      <b>Tipo:</b> {{i.tipo}} <br>
+                      <b>Telefono:</b> {{i.telefono}} <br>
+                      <b>Email:</b> {{i.email}} <br>
+                      <b>Actividad:</b> {{i.actividad}} <br>
+                      <b>Nivel Educacional:</b> {{i.nivel_educacional}} <br>
+                      <b>Direccion:</b> {{i.direccion}}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="Entrevistas" class="col-md" style="display:none; ">
+            <h5 *ngIf="c5==0" class="card-title text-center mt-5"><b>No Hay Entrevistas</b> </h5>
+            <div class="row mb-2 mt-2">
+              <div class="col-md-6" *ngFor="let i of entrevistas">
+                <hr>
+                <div class="card">
+                  <div class="card-body bg-light">
+                    <h5 class="card-title text-center"><i class="fas fa-calendar-check"></i><b> Entrevista</b> </h5>
+                    <hr>
+                    <b>Fecha:</b> {{i.fecha}} <br>
+                    <b>Observaciones:</b> {{i.observacion}} <br>
+                    <b>Ingresada por:</b> {{i.name+' '+i.surname}} <br>
+                    <b>Fecha Ingreso:</b> {{i.created_at | date:'dd-MM-yyyy, h:mm:ss' }} <br>
+                    <b>Ultima Actualización:</b> {{i.updated_at | date:'dd-MM-yyyy, h:mm:ss' }} <br>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="Diagnosticos" class="col-md" style="display:none; ">
+            <h5 *ngIf="c2==0" class="card-title text-center mt-5"><b>No Hay Diagnosticos</b> </h5>
+            <div class="row mb-2 mt-2" *ngFor="let i of diagnosticos">
+              <div class="col-md-12">
+                <div class="card">
+                  <div class="card-body bg-light">
+                    <h5 class="card-title  text-center"><i class="fas fa-stethoscope"></i><b> Diagnostico</b>
+                    </h5>
+                    <hr>
+                    <div class="row">
+                      <hr>
+                      <div class="col-md-6">
+                        <b>Fecha Autorización:</b> {{i.fecha_evaluacion|date:'dd-MM-yyyy'}} <br>
+                        <b>Fecha Reevaluación:</b> {{i.fecha_reevaluacion|date:'dd-MM-yyyy'}} <br>
+                        <b>NEE Postulada:</b> {{i.nee_postulada}} <br>
+                        <b>Fecha Ingreso:</b> {{i.created_at | date:'dd-MM-yyyy, h:mm:ss' }} <br>
+                        <b>Ultima Actualización:</b> {{i.updated_at | date:'dd-MM-yyyy, h:mm:ss' }} <br>
+                      </div>
+                      <div class="col-md-6">
+                        <b>Fecha Evaluación:</b> {{i.fecha_evaluacion|date:'dd-MM-yyyy'}} <br>
+                        <b>Derivación:</b> {{i.derivacion}} <br>
+                        <b>Tipo NEE:</b> {{i.tipo_nee}} <br>
+                        <b>Registrado por:</b> {{i.name+' '+i.surname}}{{' ('+i.profesion+')'}} <br>
+                      </div>
+                      <div class="col-md-12">
+                        <b>Observaciones:</b> {{i.observacion}} <br>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="Documentos" class="col-md" style="display:none; ">
+            <h5 *ngIf="c3==0" class="card-title text-center mt-5"><b>No Hay Documentos</b> </h5>
+            <div class="row mb-2 mt-2">
+              <div class="col-md-12" *ngFor="let i of documentos">
+                <hr>
+                <div class="card">
+                  <div class="card-body bg-light">
+                    <h5 class="card-title text-center"><i class="fas fa-file"></i><b> Documentos</b> </h5>
+                    <hr>
+                    <div class="row">
+
+                      <div class="col-md-6">
+                        <b>Certificado de nacimiento: </b><i *ngIf="i.certificado_nac==0" class="fas fa-times"></i><i
+                          *ngIf="i.certificado_nac==1" class="fas fa-check-square"></i> <br>
+                        <b>Autorización Padres: </b><i *ngIf="i.autorizacion_padres==0" class="fas fa-times"></i><i
+                          *ngIf="i.autorizacion_padres==1" class="fas fa-check-square"></i><br>
+                        <b>Derivación: </b><i *ngIf="i.derivacion==0" class="fas fa-times"></i><i
+                          *ngIf="i.derivacion==1" class="fas fa-check-square"></i><br>
+                        <b>Anamnesis: </b><i *ngIf="i.anamnesis==0" class="fas fa-times"></i><i *ngIf="i.anamnesis==1"
+                          class="fas fa-check-square"></i><br>
+                        <b>Pruebas: </b><i *ngIf="i.pruebas==0" class="fas fa-times"></i><i *ngIf="i.pruebas==1"
+                          class="fas fa-check-square"></i><br>
+                        <b>Protocolos: </b><i *ngIf="i.protocolos==0" class="fas fa-times"></i><i
+                          *ngIf="i.protocolos==1" class="fas fa-check-square"></i><br>
+                        <b>Formulario de ingreso: </b><i *ngIf="i.formulario_ingreso==0" class="fas fa-times"></i><i
+                          *ngIf="i.formulario_ingreso==1" class="fas fa-check-square"></i><br>
+                      </div>
+                      <div class="col-md-6">
+                        <b>Valoración de salud: </b><i *ngIf="i.valoracion_salud==0" class="fas fa-times"></i><i
+                          *ngIf="i.valoracion_salud==1" class="fas fa-check-square"></i><br>
+                        <b>Fonoaudiologico: </b><i *ngIf="i.fonoaudiologico==0" class="fas fa-times"></i><i
+                          *ngIf="i.fonoaudiologico==1" class="fas fa-check-square"></i><br>
+                        <b>Psicopedagogico: </b><i *ngIf="i.psicopedagogico==0" class="fas fa-times"></i><i
+                          *ngIf="i.psicopedagogico==1" class="fas fa-check-square"></i><br>
+                        <b>Psicologico: </b><i *ngIf="i.psicologico==0" class="fas fa-times"></i><i
+                          *ngIf="i.psicologico==1" class="fas fa-check-square"></i><br>
+                        <b>Neurologico: </b><i *ngIf="i.neurologico==0" class="fas fa-times"></i><i
+                          *ngIf="i.neurologico==1" class="fas fa-check-square"></i><br>
+                        <b>Fecha Ingreso:</b> {{i.created_at | date:'dd-MM-yyyy, h:mm:ss' }} <br>
+                        <b>Ultima Actualización:</b> {{i.updated_at | date:'dd-MM-yyyy, h:mm:ss' }} <br>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="Fichas" class="col-md" style="display:none; ">
+            <h5 *ngIf="c6==0" class="card-title text-center mt-5"><b>No Hay Ficha</b> </h5>
+            <div class="row mb-2 mt-2" *ngFor="let i of fichas">
+              <div class="col-md-6 offset-3">
+                <div class="card">
+                  <div class="card-body bg-light">
+                    <h5 class="card-title text-center"><i class="fas fa-capsules"></i><b> Ficha de Salud </b>
+                    </h5>
+                    <hr>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <b>Nombre Sistema: </b>{{i.nombre_sistema}} <br>
+                        <b>Medicamentos: </b>{{i.medicamentos}} <br>
+                        <b>Observaciones: </b>{{i.observacion}} <br>
+                        <b>Fecha Ingreso:</b> {{i.created_at | date:'dd-MM-yyyy, h:mm:ss' }} <br>
+                        <b>Ultima Actualización:</b> {{i.updated_at | date:'dd-MM-yyyy, h:mm:ss' }} <br>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="Historial" class="col-md" style="display:none; ">
+            <h5 *ngIf="c4==0" class="card-title text-center mt-5"><b>No Hay Historial académico</b> </h5>
+            <div class="row mb-2 mt-2" *ngFor="let i of historial">
+              <div class="col-md-6 offset-3">
+                <div class="card">
+                  <div class="card-body bg-light">
+                    <h5 class="card-title text-center"><i class="fas fa-school"></i> <b> Historial Académico</b></h5>
+                    <hr>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <b>Ingreso CPC: </b>{{i.ingreso_cpc |date:'dd-MM-yyyy'}} <br>
+                        <b>Ingreso PIE: </b>{{i.ingreso_pie |date:'dd-MM-yyyy'}} <br>
+                        <b>Actividades extraprogramaticas:</b> {{i.activid_extraprogra}}<br>
+                        <b>Curso Repetido: </b> {{i.curso_repetido}} <br>
+                        <b>Colegio anterior: </b>{{i.colegio_anterior}} <br>
+                        <b>Fecha Ingreso:</b> {{i.created_at | date:'dd-MM-yyyy, h:mm:ss' }} <br>
+                        <b>Ultima Actualización:</b> {{i.updated_at | date:'dd-MM-yyyy, h:mm:ss' }} <br>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr>
+    <div class="col-md-8 offset-2">
+      <h3 style="text-align: center;"><b>Genograma</b></h3>
+      <hr>
+      <h5 *ngIf="!this.estudiante.imagen_genograma" class="card-title text-center mt-5"><b>No Hay Imagen Genograma</b>
+      </h5>
+      <img *ngIf="this.estudiante.imagen_genograma" src="{{url+'estudiante/image/'+this.estudiante.imagen_genograma}}"
+        class="avatar_navbar" height="350px" class="card-img">
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- <div class="row">
+      <div id="principal" class="col-md-12 align-self-center" style="background:darkgray">
+        <div class="row ">
+          <div class="btn-group btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-secondary active" (click)="mostrarEntrenador();">
+              <input type="radio" name="options" id="option1" autocomplete="off" checked> Entrenador
+            </label>
+            <label class="btn btn-secondary" (click)="mostrarDeportista();">
+              <input type="radio" name="options" id="option3" autocomplete="off"> Deportista
+            </label>
+          </div>
+        </div>
+        <div id="EntrenadorForm" class="col-md" style="display:normal; ">
+          <div class="row">
+            <h1>Registro Entrenador sdadasdsadsasdasas dsadsadsaassad</h1>
+          </div>
+        </div>
+        <div id="DeportistaForm" class="col-md" style="display:none; ">
+          <div class="row ">
+            <h1>Registro Deportista</h1>
+          </div>
+        </div>
+      </div>
+    </div>-->
+
+
+<!--modal para registrar/actualizar marca-->
+<div class="modal" id="exampleModal" [ngStyle]="{'display':activarModal}" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="row mx-5">
+          <h5 style="text-align: center;" class="modal-title">Ficha de Ingreso</h5>
+        </div>
+        <button type="button" class="btn btn-success" (click)="generatePDF()">Exportar</button>
+        <button (click)="ocultarModal()" type="button" class="close" data-dismiss="modal">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid" id="content">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="row mt-1">
+                <div class="col-md-10 offset-1">
+                  <div class="row">
+                    <div class="col-md-2">
+                      <img id="logo" src="assets/logo.jpg" width="100px" height="100px">
+                    </div>
+                    <div id="titulo" class="col-md-8">
+                      <div align='center'>
+                        <p style="margin: 0; padding: 0;"><b>COLEGIO DE LA PURISIMA CONCEPCION</b></p>
+                        <p style="margin: 0; padding: 0;">Enseña para educar y educa para evangelizar</p>
+                        <p style="margin: 0; padding: 0;">Programa de Integración Escolar</p>
+                        <hr>
+                      </div>
+                    </div>
+                    <div id="cuardrado" class="col-md-2">
+                      <div align='center'>
+                        <p>{{this.estudiante.curso}}</p>
+                      </div>
+                      <div align='center'>
+                        <h4>{{ano}}</h4>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <h6 align='center' style="margin: 0; padding: 0;"><b>FICHA DE INFORMACIÓN MODALIDAD EDUCACIÓN
+                          ESPECIAL</b></h6>
+                      <p style="margin: 0; padding: 0;"><b>I. IDENTIFICACIÓN DE LA ESTUDIANTE:</b></p>
+                      <table border="1" width="100%">
+                        <tr>
+                          <td>Nombre</td>
+                          <td colspan="4">: {{this.estudiante.nombre+' '+this.estudiante.apellido}} </td>
+                        </tr>
+                        <tr>
+                          <td>Fecha de Nac.</td>
+                          <td colspan="2">: {{this.estudiante.fecha_nacimiento  | date:'dd-MM-yyyy'}} </td>
+                          <td>Rut</td>
+                          <td>: {{this.estudiante.rut}}</td>
+                        </tr>
+                      </table>
+                      <p><b>II. SÍNTESIS DIAGNÓSTICA NECESIDADES
+                          EDUCATIVAS
+                          ESPECIALES:</b></p>
+                      <table border="1" width="100%">
+                        <tr>
+                          <td>Tipo de NEE</td>
+                          <td colspan="2">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                <b>Transitoria</b>
+                              </label>
+                            </div>
+                          </td>
+                          <td colspan="2">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                <b>Permanente</b>
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td rowspan="8"> <p style="text-align:center;">Síntesis Diagnóstica</p> </td>
+                          <td rowspan="3">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" Checked="checked" value="true" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1" >
+                                Dificultades o Trastorno Específico del Aprendizaje
+                              </label>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Lectura
+                              </label>
+                            </div>
+                          </td>
+                          <td rowspan="3">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Discapacidad
+                              </label>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Leve
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Lectura y Escritura
+                              </label>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Moderada
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Matemáticas
+                              </label>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Severa
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td rowspan="3">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Trastorno Específico del Lenguaje
+                              </label>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Mixto
+                              </label>
+                            </div>
+                          </td>
+                          <td colspan="2">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Discapacidad visual
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td rowspan="2">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Expresivo
+                              </label>
+                            </div>
+                          </td>
+                          <td colspan="2">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Multi-Déficit
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Discapacidad auditiva
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Trastorno Déficit Atencional
+                              </label>
+                            </div>
+                          </td>
+                          <td colspan="2">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Difasia severa
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Funcionamiento Intelectual Limítrofe
+                              </label>
+                            </div>
+                          </td>
+                          <td colspan="2">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                Trastorno Autista
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Evaluación</td>
+                          <td>: {{this.ultimo.fecha_evaluacion  | date:'dd-MM-yyyy' }}</td>
+                          <td colspan="2">Reevaluacion</td>
+                          <td>: {{this.ultimo.fecha_reevaluacion  | date:'dd-MM-yyyy' }}</td>
+                        </tr>
+                        <tr>
+                          <td colspan="4"> RESPALDA EL INGRESO A MODALIDAD DE EDUCACIÓN ESPECIAL</td>
+                          <td><input class="sinbordefondo" type="text" name="fname" size="10px" value=': N° 170'></td>
+                        </tr>
+                      </table>
+                      <p><b>III. PROFESIONALES RESPONSABLES DEL
+                          DIAGNÓSTICO:</b></p>
+                      <table border="1" width="100%">
+                        <tr>
+                          <td colspan="1">PROFESIONAL QUE EMITE DIAGNÓSTICO</td>
+                          <td colspan="4">: <b><input class="sinbordefondo" type="text" name="fname" size="20px"
+                                value='xxxxx'></b>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="1">TÍTULO</td>
+                          <td colspan="2">: <input class="sinbordefondo" type="text" name="fname"
+                            size="5px" value=' xxxxx'> <b></b></td>
+                          <td colspan="2">N°<input class="sinbordefondo" type="text" name="fname"
+                              size="5px" value=' 111111'> </td>
+                        </tr>
+                        <tr>
+                          <td colspan="1">EVALUADOR PSICOPEDAGÓGICO</td>
+                          <td colspan="4">: <b><input class="sinbordefondo" type="text" name="fname" size="20px"
+                                value='xxxxx'></b>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="1">TÍTULO</td>
+                          <td colspan="2">: <input class="sinbordefondo" type="text" name="fname"
+                            size="5px" value='xxxxx'><b></b></td>
+                          <td colspan="2">N°<input class="sinbordefondo" type="text" name="fname"
+                              size="5px" value=' 11111'> </td>
+                        </tr>
+                      </table>
+                      <p><b>IV. DOCUMENTACIÓN MÍNIMA DE EXPEDIENTE:</b>
+                      </p>
+                      <table border="1" width="100%">
+                        <tr>
+                          <td colspan="2">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                <b>Certificado Nacimiento</b>
+                              </label>
+                            </div>
+                          </td><td colspan="2">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                <b> Formulario de ingreso y/o Reevaluación</b>
+                              </label>
+                            </div>
+                           </td>
+                          
+                        </tr>
+                        <tr>
+                          <td colspan="2">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                <b> Autorización de los padres</b>
+                              </label>
+                            </div>
+                            </td>
+                          <td colspan="2">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                <b> Valoración de salud</b>
+                              </label>
+                            </div></td>
+                          
+                        </tr>
+                        <tr>
+                          <td colspan="2">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                <b> Derivación</b>
+                              </label>
+                            </div>
+                         </td>
+                          
+                          <td colspan="2">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                <b> Informe Fonoaudiológico</b>
+                              </label>
+                            </div>
+                           </td>
+                          
+                        </tr>
+                        <tr>
+                          <td colspan="2">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                <b> Anamnésis</b>
+                              </label>
+                            </div>
+                           </td>
+                          
+                          <td colspan="2">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                <b> Informe Psicopedagógico</b>
+                              </label>
+                            </div>
+                          </td>
+                          
+                        </tr>
+                        <tr>
+                          <td colspan="2">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                <b> Pruebas</b>
+                              </label>
+                            </div>
+                            </td>
+                         
+                          <td colspan="2">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                <b> Informe Psicológico</b>
+                              </label>
+                            </div>
+                            </td>
+                        
+                        </tr>
+                        <tr>
+                          <td colspan="2">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                <b> Protocolos</b>
+                              </label>
+                            </div>
+                            </td>
+                          
+                          <td colspan="2">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                <b> Certificado Neurológico</b>
+                              </label>
+                            </div></td>
+                        </tr>
+                      </table>
+                      <p><b>V. ESTABLECIMIENTO EDUCACIONAL:</b></p>
+                      <table border="1" width="100%">
+                        <tr>
+                          <td colspan="2">NOMBRE: <b>Colegio de la Purísima Concepción</b>
+                          </td>
+                          <td rowspan="2" colspan="2">
+                            <p style="margin: 0; padding: 0;">&nbsp;&nbsp;&nbsp;&nbsp;DEPENDENCIA</p>
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" Checked="checked" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                PARTICULAR-SUBV
+                              </label>
+                            </div>
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                MUNICIPAL
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="1">RBD: <b>3711-7</b></td>
+                          <td colspan="1">TELEFONO: <b>42-2236815</b></td>
+                        </tr>
+                        <tr>
+                          <td colspan="4">DIRECCIÓN: <b>Avenida Libertad #952</b></td>
+                        </tr>
+                        <tr>
+                          <td colspan="1">SEP:---</td>
+                          <td colspan="1">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" Checked="checked" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                C/JEC
+                              </label>
+                            </div>
+                          </td>
+                          <td colspan="1">
+                            <div class="form-check">&nbsp;
+                              <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                              <label class="form-check-label" for="defaultCheck1">
+                                S/JEC
+                              </label>
+                            </div>
+                          </td>
+                          <td colspan="1">COMUNA: <b>Chillán</b>
+                          </td>
+                        </tr>
+                      </table>
+                      <br>
+                      <div class="row">
+                        <div class="col-md-5 ">
+                          <h4 style="text-align: center;">....................................</h4>
+                          <p style="text-align: center;">Nombre y firma apoderado/a</p>
+                        </div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <div class="col-md-5 ">
+                          <h4 style="text-align: center;">....................................</h4>
+                          <p style="text-align: center;">Firma Docente Especialista</p>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-5">
+                          <h4 style="text-align: center;">.....................................</h4>
+                          <p style="text-align: center;">Firma Coordinadora PIE</p>
+                        </div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <div class="col-md-5">
+                          <h4 style="text-align: center;">.....................................</h4>
+                          <p style="text-align: center;">Firma y timbre Director</p>
+                          
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" (click)="ocultarModal()" class="btn btn-danger">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!--fin modal para registrar/actualizar marca-->

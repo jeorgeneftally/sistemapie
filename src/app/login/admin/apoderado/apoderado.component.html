@@ -1,0 +1,193 @@
+<div class="container-fluid">
+<!--migas de pan-->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a [routerLink]="['/Inicio']">Inicio</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Estudiantes</li>
+  </ol>
+</nav>
+<!--fin migas de pan-->
+<div class="card">
+  <div class="card-body">
+    <div class="row">
+      <!--seccion de input para filtrar los productos-->
+      <div class="col-md-2"></div>
+      <div class="col-md-4"> 
+      </div>
+      <div class="col-md-3">
+        <select class="form-control" [(ngModel)]="valor" (change)="setValue()">
+          <option value="Activo">Activos</option>
+          <option value="Inactivo">Inactivos</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-sm btn-primary" (click)="mostrarModal()" title="Registrar Apoderado"><i class="fas fa-pen-square"></i> 
+          Registrar Apoderado
+        </button>
+      </div>
+    </div>
+    <br>
+    <!--ya no debemos hacer property binding, dado que utilizará los arreglos del servicio-->
+    <!--<app-product-list [datos]="filterProducts"></app-product-list>-->
+    <div class="card border-primary mb-3 text-center">
+      <div class="card-header"><b>Lista de Apoderados</b></div>
+      <div class="card-body text-primary">
+        <div class="table-responsive">
+          <!--llamamos a los nuuevos arreglos declarados , y condicionamos-->
+          <table class="table">
+            <thead>
+              <!-- esto indica el cabecero de la tabla-->
+              <tr>
+                <th>#</th>
+                <th>Nombre Completo</th>
+                <th>Email</th>
+                <th>Telefono</th>
+                <th>Actividad</th>
+                <th *ngIf="identity.role =='Role_Admin'">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!--aqui ocupamos a los arreglos del servicio de productos-->
+              <tr id="hover" *ngFor="let i of mostrarapoderados | paginate: config ;let indice=index">
+                <td>{{indice+1}}</td>
+                <td>{{i.nombre}} {{i.apellido}}</td>
+                <td>{{i.email}}</td>
+                <td>{{i.telefono}}</td>
+                <td>{{i.actividad}}</td>
+                <td>
+                  <button *ngIf="identity.role!='Role_User'" class="btn btn-primary btn-sm" title="Actualizar"
+                    (click)="mostrarModal(i.id,i.nombre,i.apellido,i.telefono,i.email,i.parentesco,i.actividad,i.direccion,i.nivel_educacional)">
+                    <i class="fas fa-pencil-alt"></i> Ver/Editar
+                  </button>
+                  &nbsp;
+                  <button *ngIf="identity.role!='Role_User' && i.estado=='Activo'" class="btn btn-danger btn-sm" (click)="disableApoderado(i.id, i.nombre, i.apellido)"
+                    title="Deshabilitar">
+                    <i class="fas fa-ban"></i> Deshabilitar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+            <!--FIN DE BODY-->
+          </table>
+          <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+        </div>
+        <!--FIN DE SECCION TABLA TABLA-->
+      </div>
+      <!--FIN HEADER CARD-->
+    </div>
+    <!--FIN BORDER CARD-->
+  </div>
+    <!--modal para registrar/actualizar apoderado-->
+    <div class="modal" id="exampleModal" [ngStyle]="{'display':activarModal}" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background: #dddddd">
+          <div class="modal-header">
+            <h5 class="modal-title">Registro de Apoderados</h5>
+            <button (click)="ocultarModal()" type="button" class="close" data-dismiss="modal">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <!--formulario para crear/actualizar apoderado-->
+            <form class="col-md-12 ml-0 pl-0" #modelNew="ngForm" (ngSubmit)="onSubmit(modelNew)">
+              <div class="row">
+                <div class="form-group col-md-6">
+                  <label for="name">Nombres </label>
+                  <input type="text" name="nombre" #nombre="ngModel" [(ngModel)]="apoderado.nombre" class="form-control"
+                  pattern="^[a-zA-Z\s]{2,254}" required>
+                  <small *ngIf="!nombre.valid && nombre.touched" class="invalid-feedback d-block">
+                    Debe ingresar el nombre
+                  </small>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="name">Apellidos</label>
+                  <input type="text" name="apellido" #apellido="ngModel" [(ngModel)]="apoderado.apellido"
+                    class="form-control" pattern="^[a-zA-Z\s]{2,254}" required>
+                  <small *ngIf="!apellido.valid && apellido.touched" class="invalid-feedback d-block">
+                    Debe ingresar el apellido
+                  </small>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group col-md-6">
+                  <label for="name">Telefono</label>
+                  <input type="text" name="telefono" #telefono="ngModel" [(ngModel)]="apoderado.telefono"
+                    class="form-control" required>
+                  <small *ngIf="!telefono.valid && telefono.touched" class="invalid-feedback d-block">
+                    Debe ingresar el telefono
+                  </small>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="email">Email</label>
+                  <input type="email" name="email" #email="ngModel" [(ngModel)]="apoderado.email" class="form-control"
+                    required>
+                  <small *ngIf="!email.valid && email.touched" class="invalid-feedback d-block">
+                    Debe ingresar el email
+                  </small>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group col-md-4">
+                  <label for="parentesco">Parentesco </label>
+                  <input list="parent" type="text" name="parentesco" #parentesco="ngModel"
+                    [(ngModel)]="apoderado.parentesco" class="form-control" required>
+                  <datalist id="parent">
+                    <option label="Madre" value="Madre"></option>
+                    <option value="Padre"></option>
+                    <option value="Hermano\a"></option>
+                    <option value="Tio\a"></option>
+                    <option value="Primo\a"></option>
+                    <option value="Abuelo\a"></option>
+                    <option value="Amigo\a"></option>
+                    <option value="Sobrino\a"></option>
+                    <option value="Padrastro"></option>
+                    <option value="Madrastra"></option>
+                  </datalist>
+                  <small *ngIf="!parentesco.valid && parentesco.touched" class="invalid-feedback d-block">
+                    Debe ingresar el parentesco
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="nivel_educacional">Nivel Educacional</label>
+                  <input list="nivel" type="text" name="nivel_educacional" #nivel_educacional="ngModel"
+                    [(ngModel)]="apoderado.nivel_educacional" class="form-control" required>
+                  <datalist id="nivel">
+                    <option label="Básica Incompleta" value="Básica Incompleta"></option>
+                    <option label="Básica Completa" value="Básica Completa"></option>
+                    <option label="Media Incompleta" value="Media Incompleta"></option>
+                    <option label="Media Completa" value="Media Completa"></option>
+                    <option label="Sin Estudios" value="Sin Estudios"></option>
+                    <option label="Superior Incompleta" value="Superior Incompleta"></option>
+                    <option label="Superior Completa" value="Superior Completa"></option>
+                  </datalist>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="actividad">Actividad</label>
+                  <input list="act" type="text" name="actividad" #actividad="ngModel" [(ngModel)]="apoderado.actividad"
+                    class="form-control" pattern="^[a-zA-Z\s]{2,254}" required>
+                  <datalist id="act">
+                    <option *ngFor="let i of apoderados" label="{{i.actividad}}" value="{{i.actividad}}"></option>
+                  </datalist>
+                  <small *ngIf="!actividad.valid && actividad.touched" class="invalid-feedback d-block">
+                    Debe ingresar datos
+                  </small>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group col-md-12">
+                  <label for="direccion">Dirección</label>
+                  <input type="text" name="direccion" #direccion="ngModel" [(ngModel)]="apoderado.direccion"
+                    class="form-control" required>
+                </div>
+              </div>
+              <input type="submit" class="btn btn-success" value="Guardar" [disabled]="modelNew.invalid">
+            </form>
+            <!--fin formulario para crear/actualizar apoderado-->
+          </div>
+          <div class="modal-footer">
+            <button type="button" (click)="ocultarModal()" class="btn btn-danger">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--fin modal para registrar/actualizar apoderado-->

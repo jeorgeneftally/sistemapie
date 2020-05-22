@@ -1,0 +1,130 @@
+<div class="container-fluid">
+<!--migas de pan-->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a [routerLink]="['/Inicio']">Inicio</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Entrevistas</li>
+  </ol>
+</nav>
+<!--fin migas de pan-->
+
+<div class="card">
+  <div class="card-body">
+    <div class="row">
+      <!--seccion de input para filtrar los productos-->
+      <div class="col-md-2"></div>
+      <div class="col-md-4">
+      </div>
+      <div class="col-md-3">
+        <select class="form-control" [(ngModel)]="valor" (change)="setValue()">
+          <option value="Activo">Activos</option>
+          <option value="Inactivo">Inactivos</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary btn-sm" (click)="mostrarModal();"><i class="fas fa-pen-square"></i> 
+          Registrar Entrevista
+        </button>
+      </div>
+    </div>
+    <br>
+    <!--ya no debemos hacer property binding, dado que utilizará los arreglos del servicio-->
+    <!--<app-product-list [datos]="filterProducts"></app-product-list>-->
+    <div class="card border-primary mb-3 text-center">
+      <div class="card-header"><b>Lista de Entrevistas</b></div>
+      <div class="card-body text-primary">
+        <div class="table-responsive">
+          <!--llamamos a los nuuevos arreglos declarados en productService, y condicionamos-->
+          <table class="table table-striped">
+            <thead>
+              <!-- esto indica el cabecero de la tabla-->
+              <tr>
+                <th>#</th>
+                <th>Nombre de la estudiante</th>
+                <th>Observaciones</th>
+                <th>Fecha</th>
+                <th>Profesional</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!--aqui ocupamos a los arreglos del servicio de entrevistas-->
+              <tr *ngFor="let i of mostrarentrevista | paginate: config ;let indice=index">
+                <td>{{indice+1}}</td>
+                <td>{{i.estudiante.nombre +' '+i.estudiante.apellido}}</td>
+                <td>{{i.observacion}}</td>
+                <td>{{i.fecha | date: 'dd-MM-yyyy'}}</td>
+                <td>{{i.user.name +' '+ i.user.surname}}</td>
+                <td>
+                  <button class="btn btn-primary btn-sm"
+                    (click)="mostrarModal(i.id,i.fecha, i.observacion, i.user_id, i.estudiante_id );">
+                    <i class="fas fa-pencil-alt"></i> Ver/Editar
+                  </button>
+                  &nbsp;
+                  <button *ngIf="i.estado=='Activo'"  class="btn btn-danger btn-sm" (click)="disableEntrevista(i.id)">
+                    <i class="fas fa-ban"></i> Deshabilitar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+            <!--FIN DE BODY-->
+          </table>
+          <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+        </div>
+        <!--FIN DE SECCION TABLA TABLA-->
+      </div>
+      <!--FIN HEADER CARD-->
+    </div>
+    <!--FIN BORDER CARD-->
+  </div>
+
+    <!--modal para registrar/actualizar marca-->
+    <div class="modal" id="exampleModal" [ngStyle]="{'display':activarModal}" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background: #dddddd">
+          <div class="modal-header">
+            <h5 class="modal-title">Registro de entrevistas</h5>
+            <button (click)="ocultarModal()" type="button" class="close" data-dismiss="modal">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <!--formulario para crear/actualizar modelo-->
+            <form class="col-md-12 ml-0 pl-0" #modelNew="ngForm" (ngSubmit)="onSubmit(modelNew)">
+              <div class="row">
+                <div class="form-group col-md-6">
+                  <label for="fecha">Fecha de realización</label><br>
+                  <input class="form-control" type="date" id="fecha" name="fecha" #fecha="ngModel"
+                    [(ngModel)]="entrevista.fecha" min="1990-01-01" max="2090-12-31">
+                  <small *ngIf="!fecha.valid && fecha.touched" class="invalid-feedback d-block">
+                    Debe ingresar la fecha
+                  </small>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="estudiante_id">Estudiante</label>
+                  <select name="estudiante_id" class="form-control" id="estudiante_id" #estudiante_id="ngModel"
+                    [(ngModel)]="entrevista.estudiante_id">
+                    <option *ngFor="let i of estudiantes" value="{{i.id}}">{{i.nombre +" "+ i.apellido}}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group col-md-12">
+                  <label for="observacion">Observaciones</label>
+                  <textarea rows="4" cols="50" name="observacion" #observacion="ngModel"
+                    [(ngModel)]="entrevista.observacion" class="form-control" required>
+                  </textarea>
+                </div>
+              </div>
+              <div class="row">
+              </div>
+              <input value="Guardar" type="submit" class="btn btn-success" [disabled]="modelNew.invalid">
+            </form>
+            <!--fin formulario para crear/actualizar entrevista-->
+          </div>
+          <div class="modal-footer">
+            <button type="button" (click)="ocultarModal()" class="btn btn-danger">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>

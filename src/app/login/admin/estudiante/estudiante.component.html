@@ -1,0 +1,302 @@
+<div class="container-fluid">
+<!--migas de pan-->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a [routerLink]="['/Inicio']">Inicio</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Estudiantes</li>
+  </ol>
+</nav>
+<!--fin migas de pan-->
+
+<div class="card">
+  <div class="card-body">
+    <div class="row">
+      <!--seccion de input para filtrar los estudiantes .   -->
+      <div class="col-md-3">Buscar por nombre o apellido: </div>
+      <div class="col-md-3">
+        <div class="form-group">
+          <input type="text" class="form-control" name="filterEstudiantes" [(ngModel)]="filterEstudiantes">
+        </div>
+      </div>
+      <div class="col-md-2">
+        <select class="form-control" [(ngModel)]="valor" (change)="setValue()">
+          <option value="Activo">Activos</option>
+          <option value="Inactivo">Inactivos</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <button class="btn btn-success btn-sm" (click)="exportar()"><i class="far fa-file-pdf"></i> Exportar</button>
+        &nbsp;
+        <button *ngIf="activarbotones=='none'" class="btn btn-secondary btn-sm" (click)="activar()"><i
+            class="fas fa-eye"></i> Volver</button> &nbsp;
+        <button class="btn btn-primary btn-sm" (click)="mostrarModal()"
+          *ngIf="identity.role!='Role_User' && activarbotones=='block'">
+          <i class="fas fa-pen-square"></i> Registrar Estudiante
+        </button>
+      </div>
+    </div>
+    <br>
+    <!--ya no debemos hacer property binding, dado que utilizará los arreglos del servicio-->
+    <div id="contenido" class="card  mb-3 text-center">
+      <div class="card-header"><b>
+          <h5>Lista de Estudiantes</h5>
+        </b></div>
+      <div class="card-body text-primary">
+        <div class="table-responsive">
+          <!--llamamos a los nuuevos arreglos declarados en estudianteservice, y condicionamos  ... -->
+          <table class="table table-striped" *ngIf="estudiantes && estudiantes.length">
+            <thead>
+              <!-- esto indica el cabecero de la tabla-->
+              <tr>
+                <th>#</th>
+                <th [ngStyle]="{'display':activarbotones}"><b>Perfil</b></th>
+                <th><b>Rut</b></th>
+                <th><b>Nombre Completo</b></th>
+                <th><b>Fecha Nacimiento</b></th>
+                <th><b>Curso</b></th>
+                <th [ngStyle]="{'display':activarbotones}"><b>Acciones</b></th>
+              </tr>
+            </thead>
+            <tbody>
+              <!--aqui ocupamos a los arreglos del servicio de productos  (| date:'fullDate') ...-->
+              <tr id="hover"
+                *ngFor="let i of mostrarestudiantes.slice().reverse() | filter:filterEstudiantes | paginate: config ;let indice=index">
+                <td>{{indice+1}}</td>
+                <td *ngIf="i.imagen_perfil" [ngStyle]="{'display':activarbotones}">
+                  <div class="avatar_mask mx-auto">
+                    <img src="{{url+'estudiante/image/'+i.imagen_perfil}}" class="avatar_navbar" height="70px">
+                  </div>
+                </td>
+                <td *ngIf="!i.imagen_perfil" [ngStyle]="{'display':activarbotones}">
+                  <a class="btn btn-outline-info btn-image" (click)="mostrarModal(i.id,i.rut,i.nombre,i.apellido,i.fecha_nacimiento,i.direccion,i.curso,i.personas_vive,i.estado,i.imagen_perfil,i.imagen_genograma)">
+                    <i class="fas fa-cloud-upload-alt fa-2x"></i>
+                  </a>
+                </td>
+                <td>{{i.rut}}</td>
+                <td>{{i.nombre}} {{i.apellido}}</td>
+                <td>{{i.fecha_nacimiento | date: 'dd-MM-yyyy'}}</td>
+                <td>{{i.curso }}</td>
+                <td [ngStyle]="{'display':activarbotones}">
+                  <a class="btn btn-success btn-sm" [routerLink]="['/Inicio/Detalle',i.id]">
+                    <i class="fa fa-eye"></i> Ver
+                  </a>
+                  &nbsp;
+                  <button class="btn btn-primary btn-sm" *ngIf="identity.role!='Role_User'"
+                    (click)="mostrarModal(i.id,i.rut,i.nombre,i.apellido,i.fecha_nacimiento,i.direccion,i.curso,i.personas_vive,i.estado,i.imagen_perfil,i.imagen_genograma)">
+                    <i class="fas fa-pencil-alt"></i> Editar
+                  </button>
+                  &nbsp;
+                  <button class="btn btn-danger btn-sm" *ngIf="identity.role!='Role_User' && i.estado=='Activo'"
+                    (click)="disableEstudiante(i.id,i.nombre,i.apellido)">
+                    <i class="fas fa-pencil-alt"></i> Deshabilitar
+                  </button>
+                  &nbsp;
+                </td>
+              </tr>
+            </tbody>
+            <!--FIN DE BODY-->
+          </table>
+          <pagination-controls [ngStyle]="{'display':activarbotones}" (pageChange)="pageChanged($event)">
+          </pagination-controls>
+        </div>
+        <!--FIN DE SECCION TABLA TABLA-->
+      </div>
+      <!--FIN HEADER CARD-->
+    </div>
+    <!--FIN BORDER CARD-->
+  </div>
+    <!--modal para registrar/actualizar estudiante-->
+    <div class="modal" id="exampleModal" [ngStyle]="{'display':activarModal}" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background: #dddddd">
+
+          <div class="modal-header">
+            <div class="row mx-5">
+              <h5 class="modal-title">Formulario de registro de estudiantes</h5>
+            </div>
+            <button (click)="ocultarModal()" type="button" class="close" data-dismiss="modal">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <!--formulario para crear/actualizar estudiante-->
+            <form class="col-md-12 ml-0 pl-0" #modelNew="ngForm" (ngSubmit)="onSubmit(modelNew)">
+              <div class="row">
+                <div class="form-group col-md-4">
+                  <label for="name">Rut Estudiante</label>
+                  <input type="text" name="rut" #rut="ngModel" [(ngModel)]="estudiante.rut" class="form-control"
+                    pattern="^(\d{1}|\d{2})\.(\d{3}\.\d{3}-)([a-zA-Z]{1}$|\d{1}$)" required>
+                  <small *ngIf="!rut.valid && rut.touched" class="invalid-feedback d-block">
+                    Debe ingresar el rut correctamente
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="name">Nombres</label>
+                  <input type="text" name="nombre" #nombre="ngModel" [(ngModel)]="estudiante.nombre"
+                    class="form-control" pattern="^[a-zA-Z\s]{2,254}" required>
+                  <small *ngIf="!nombre.valid && nombre.touched" class="invalid-feedback d-block">
+                    Debe ingresar los nombres
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="name">Apellidos</label>
+                  <input type="text" name="apellido" #apellido="ngModel" [(ngModel)]="estudiante.apellido"
+                    class="form-control" pattern="^[a-zA-Z\s]{2,254}" required>
+                  <small *ngIf="!apellido.valid && apellido.touched" class="invalid-feedback d-block">
+                    Debe ingresar los apellidos
+                  </small>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group col-md-4">
+                  <label for="name">Dirección</label>
+                  <input type="text" name="direccion" #direccion="ngModel" [(ngModel)]="estudiante.direccion"
+                    class="form-control" required>
+                  <small *ngIf="!direccion.valid && direccion.touched" class="invalid-feedback d-block">
+                    Debe ingresar el dirección
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="fecha_nacimiento">Fecha Nacimiento</label><br>
+                  <input class="form-control" type="date" id="fecha_nacimiento" name="fecha_nacimiento"
+                    #fecha_nacimiento="ngModel" [(ngModel)]="estudiante.fecha_nacimiento" value="2018-07-22"
+                    min="1990-01-01" max="2090-12-31" required>
+                  <small *ngIf="!fecha_nacimiento.valid && fecha_nacimiento.touched" class="invalid-feedback d-block">
+                    Debe ingresar la fecha de nacimiento
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="name">Curso</label>
+                  <select type="text" name="curso" #curso="ngModel" [(ngModel)]="estudiante.curso" class="form-control"
+                    pattern="^[a-zA-Z\s]{2,254}" required>
+                    <option value="Pre Kinder A">Pre Kinder A</option>
+                    <option value="Pre Kinder B">Pre Kinder B</option>
+                    <option value="Pre Kinder C">Pre Kinder C</option>
+                    <option value="Kinder A">Kinder A</option>
+                    <option value="Kinder B">Kinder B</option>
+                    <option value="Kinder C">Kinder C</option>
+                    <option value="Primero A">Primero A</option>
+                    <option value="Primero B">Primero B</option>
+                    <option value="Primero C">Primero C</option>
+                    <option value="Primero D">Primero D</option>
+                    <option value="Primero E">Primero E</option>
+                    <option value="Primero F">Primero F</option>
+                    <option value="Segundo A">Segundo A</option>
+                    <option value="Segundo B">Segundo B</option>
+                    <option value="Segundo C">Segundo C</option>
+                    <option value="Segundo D">Segundo D</option>
+                    <option value="Segundo E">Segundo E</option>
+                    <option value="Segundo F">Segundo F</option>
+                    <option value="Tercero A">Tercero A</option>
+                    <option value="Tercero B">Tercero B</option>
+                    <option value="Tercero C">Tercero C</option>
+                    <option value="Tercero D">Tercero D</option>
+                    <option value="Tercero E">Tercero E</option>
+                    <option value="Tercero F">Tercero F</option>
+                    <option value="Cuarto A">Cuarto A</option>
+                    <option value="Cuarto B">Cuarto B</option>
+                    <option value="Cuarto C">Cuarto C</option>
+                    <option value="Cuarto D">Cuarto D</option>
+                    <option value="Cuarto E">Cuarto E</option>
+                    <option value="Cuarto F">Cuarto F</option>
+                    <option value="Quinto A">Quinto A</option>
+                    <option value="Quinto B">Quinto B</option>
+                    <option value="Quinto C">Quinto C</option>
+                    <option value="Quinto D">Quinto D</option>
+                    <option value="Quinto E">Quinto E</option>
+                    <option value="Quinto F">Quinto F</option>
+                    <option value="Sexto A">Sexto A</option>
+                    <option value="Sexto B">Sexto B</option>
+                    <option value="Sexto C">Sexto C</option>
+                    <option value="Sexto D">Sexto D</option>
+                    <option value="Sexto E">Sexto E</option>
+                    <option value="Sexto F">Sexto F</option>
+                    <option value="Septimo A">Septimo A</option>
+                    <option value="Septimo B">Septimo B</option>
+                    <option value="Septimo C">Septimo C</option>
+                    <option value="Septimo D">Septimo D</option>
+                    <option value="Septimo E">Septimo E</option>
+                    <option value="Septimo F">Septimo F</option>
+                    <option value="Octavo A">Octavo A</option>
+                    <option value="Octavo B">Octavo B</option>
+                    <option value="Octavo C">Octavo C</option>
+                    <option value="Octavo D">Octavo D</option>
+                    <option value="Octavo E">Octavo E</option>
+                    <option value="Octavo F">Octavo F</option>
+                    <option value="Primero Medio A">Primero Medio A</option>
+                    <option value="Primero Medio B">Primero Medio B</option>
+                    <option value="Primero Medio C">Primero Medio C</option>
+                    <option value="Primero Medio D">Primero Medio D</option>
+                    <option value="Primero Medio E">Primero Medio E</option>
+                    <option value="Primero Medio F">Primero Medio F</option>
+                    <option value="Segundo Medio A">Segundo Medio A</option>
+                    <option value="Segundo Medio B">Segundo Medio B</option>
+                    <option value="Segundo Medio C">Segundo Medio C</option>
+                    <option value="Segundo Medio D">Segundo Medio D</option>
+                    <option value="Segundo Medio E">Segundo Medio E</option>
+                    <option value="Segundo Medio F">Segundo Medio F</option>
+                    <option value="Tercero Medio A">Tercero Medio A</option>
+                    <option value="Tercero Medio B">Tercero Medio B</option>
+                    <option value="Tercero Medio C">Tercero Medio C</option>
+                    <option value="Tercero Medio D">Tercero Medio D</option>
+                    <option value="Tercero Medio E">Tercero Medio E</option>
+                    <option value="Tercero Medio F">Tercero Medio F</option>
+                    <option value="Cuarto Medio A">Cuarto Medio A</option>
+                    <option value="Cuarto Medio B">Cuarto Medio B</option>
+                    <option value="Cuarto Medio C">Cuarto Medio C</option>
+                    <option value="Cuarto Medio D">Cuarto Medio D</option>
+                    <option value="Cuarto Medio E">Cuarto Medio E</option>
+                    <option value="Cuarto Medio F">Cuarto Medio F</option>
+                  </select>
+                  <small *ngIf="!curso.valid && curso.touched" class="invalid-feedback d-block">
+                    Debe ingresar curso
+                  </small>
+                </div>
+              </div>
+              
+               
+         
+              <div class="row">
+                <!--campo para cargar imagen de perfil-->
+                <div class="form-group col-md-4">
+                  <label for="image">Imagen Perfil</label>
+                  <div *ngIf="estudiante && estudiante.imagen_perfil">
+                    <img src="{{url+'estudiante/image/'+estudiante.imagen_perfil}}" class="avatar_edit" height="100px">
+                  </div>
+                  <hr>
+                  <angular-file-uploader [config]="afuConfig" (ApiResponse)="imageUpload($event)">
+                  </angular-file-uploader>
+                </div>
+                <!--fin campo para cargar imagen perfil-->
+                <!--campo para cargar imagen de genograma-->
+                <div class="form-group col-md-4">
+                  <label for="image">Imagen genograma</label>
+                  <div *ngIf="estudiante && estudiante.imagen_genograma">
+                    <img src="{{url+'estudiante/image/'+estudiante.imagen_genograma}}" class="avatar_edit"
+                      height="100px">
+                  </div>
+                  <hr>
+                  <angular-file-uploader [config]="afuConfig2" (ApiResponse)="imageUpload2($event)">
+                  </angular-file-uploader>
+                </div>
+                <!--fin campo para cargar imagen genograma-->
+                <div class="form-group col-md-4">
+                  <label for="name">Personas que vive </label>
+                  <input type="text" name="personas_vive" #personas_vive="ngModel"
+                    [(ngModel)]="estudiante.personas_vive" class="form-control" pattern="^[a-zA-Z\s]{2,254}" required>
+                  <small *ngIf="!personas_vive.valid && personas_vive.touched" class="invalid-feedback d-block">
+                    Debe ingresar datos
+                  </small>
+                </div>
+              </div>
+              <input value="Guardar" type="submit" class="btn btn-success" [disabled]="modelNew.invalid">
+            </form>
+            <!--fin formulario para crear/actualizar estudiante-->
+          </div>
+          <div class="modal-footer">
+            <button type="button" (click)="ocultarModal()" class="btn btn-danger">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--fin modal para registrar/actualizar marca-->

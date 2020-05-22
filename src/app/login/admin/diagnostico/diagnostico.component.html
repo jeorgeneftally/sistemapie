@@ -1,0 +1,188 @@
+<div class="container-fluid">
+<!--migas de pan-->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a [routerLink]="['/Inicio']">Inicio</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Diagnósticos</li>
+  </ol>
+</nav>
+<!--fin migas de pan-->
+<div class="card">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-2"></div>
+      <div class="col-md-4">
+      </div>
+      <div class="col-md-3">
+        <select class="form-control" [(ngModel)]="valor" (change)="setValue()">
+          <option value="Activo">Activos</option>
+          <option value="Inactivo">Inactivos</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary btn-sm" (click)="mostrarModal()"><i class="fas fa-pen-square"></i> 
+          Registrar Diagnóstico
+        </button>
+      </div>
+    </div>
+    <br>
+    <!--ya no debemos hacer property binding, dado que utilizará los arreglos del servicio-->
+    <!--<app-product-list [datos]="filterProducts"></app-product-list>-->
+    <div class="card border-primary mb-3 text-center">
+      <div class="card-header"><b>Lista de Diagnósticos</b></div>
+      <div class="card-body text-primary">
+        <div class="table-responsive">
+          <!--llamamos a los nuuevos arreglos declarados en productService, y condicionamos-->
+          <table class="table table-striped">
+            <thead>
+              <!-- esto indica el cabecero de la tabla-->
+              <tr>
+                <th>#</th>
+                <th>Estudiante</th>
+                <th>Autorización</th>
+                <th>Evaluación</th>
+                <th>Reevaluación</th>
+                <th>NEE Postulada</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!--aqui ocupamos a los arreglos del servicio de productos-->
+              <tr *ngFor="let i of mostrardiagnosticos | paginate: config ;let indice=index">
+                <td>{{indice+1}}</td>
+                <td>{{i.estudiante.nombre +" "+i.estudiante.apellido}}</td>
+                <td>{{i.fecha_autorizacion  | date: 'dd-MM-yyyy'}}</td>
+                <td>{{i.fecha_evaluacion  | date: 'dd-MM-yyyy'}}</td>
+                <td>{{i.fecha_reevaluacion  | date: 'dd-MM-yyyy'}}</td>
+                <td>{{i.nee_postulada}}</td>
+                <td>
+                  <button class="btn btn-primary btn-sm" (click)="mostrarModal(i.id, i.fecha_autorizacion, i.fecha_evaluacion, i.fecha_reevaluacion,i.nee_postulada, i.tipo_nee, i.derivacion, i.observacion, i.user_id, i.estudiante_id)">
+                    <i class="fas fa-pencil-alt"></i> Ver/Editar
+                  </button>
+                  &nbsp;
+                  <button *ngIf="i.estado=='Activo'" class="btn btn-danger btn-sm" (click)="disableDiagnostico(i.id)"> 
+                    <i class="fas fa-ban"></i> Deshabilitar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+            <!--FIN DE BODY-->
+          </table>
+          <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+        </div>
+        <!--FIN DE SECCION TABLA TABLA-->
+      </div>
+      <!--FIN HEADER CARD-->
+    </div>
+    <!--FIN BORDER CARD-->
+  </div>
+</div>
+</div>
+
+<!--modal para registrar/actualizar marca-->
+<div class="modal" id="exampleModal" [ngStyle]="{'display':activarModal}" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="background: #dddddd">
+      <div class="modal-header">
+        <h5 class="modal-title">Registro de Diagnósticos</h5>
+        <button (click)="ocultarModal()" type="button" class="close" data-dismiss="modal">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <!--formulario para crear/actualizar diagnostico-->
+        <form class="col-md-12 ml-0 pl-0" #modelNew="ngForm" (ngSubmit)="onSubmit(modelNew)">
+          <div class="row">
+            <div class="form-group col-md-4">
+              <label for="fecha_autorizacion">Fecha de autorización</label><br>
+              <input class="form-control" type="date" id="fecha_autorizacion" name="fecha_autorizacion"
+                #fecha_autorizacion="ngModel" [(ngModel)]="diagnostico.fecha_autorizacion" 
+                min="1990-01-01" max="2090-12-31">
+              <small *ngIf="!fecha_autorizacion.valid && fecha_autorizacion.touched" class="invalid-feedback d-block">
+                Debe ingresar la fecha
+              </small>
+            </div>
+            <div class="form-group col-md-4">
+              <label for="fecha_evaluacion">Fecha de evaluación</label><br>
+              <input class="form-control" type="date" id="fecha_evaluacion" name="fecha_evaluacion"
+                #fecha_evaluacion="ngModel" [(ngModel)]="diagnostico.fecha_evaluacion" 
+                min="1990-01-01" max="2090-12-31">
+              <small *ngIf="!fecha_evaluacion.valid && fecha_evaluacion.touched" class="invalid-feedback d-block">
+                Debe ingresar la fecha
+              </small>
+            </div>
+            <div class="form-group col-md-4">
+              <label for="fecha_reevaluacion">Fecha de reevaluación</label><br>
+              <input class="form-control" type="date" id="fecha_reevaluacion" name="fecha_reevaluacion"
+                #fecha_reevaluacion="ngModel" [(ngModel)]="diagnostico.fecha_reevaluacion" 
+                min="1990-01-01" max="2090-12-31">
+              <small *ngIf="!fecha_reevaluacion.valid && fecha_reevaluacion.touched" class="invalid-feedback d-block">
+                Debe ingresar la fecha
+              </small>
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-group col-md-6">
+              <label for="nee_postulada">NEE Postulada</label>
+              <input type="text" name="nee_postulada" #nee_postulada="ngModel" [(ngModel)]="diagnostico.nee_postulada"
+                class="form-control" required>
+              <small *ngIf="!nee_postulada.valid && nee_postulada.touched" class="invalid-feedback d-block">
+                Debe ingresar la NEE Postulada
+              </small>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="tipo_nee">Tipo de NEE</label>
+              <input list="tipo" type="text" name="tipo_nee" #tipo_nee="ngModel" [(ngModel)]="diagnostico.tipo_nee"
+                class="form-control" required>
+                <datalist id="tipo">
+                  <option label="Permanente" value="Permanente"></option>
+                  <option label="Transitoria" value="Transitoria"></option>
+                </datalist>  
+              <small *ngIf="!tipo_nee.valid && tipo_nee.touched" class="invalid-feedback d-block">
+                Debe ingresar el tipo
+              </small>
+            </div>
+          </div>
+          <div class="row">
+              <div class="form-group col-md-6">
+                <label for="estudiante_id">Estudiante</label>
+                <select name="estudiante_id" class="form-control" id="estudiante_id" #estudiante_id="ngModel"
+                  [(ngModel)]="diagnostico.estudiante_id">
+                  <option *ngFor="let i of estudiantes" value="{{i.id}}">{{i.nombre +" "+ i.apellido}}</option>
+                </select>
+              </div>
+              <div class="form-group col-md-6">
+                <label for="user_id">Profesional</label>
+                <select name="user_id" class="form-control" id="user_id" #user_id="ngModel"
+                  [(ngModel)]="diagnostico.user_id">
+                  <option value="{{identity.sub}}">{{identity.name +" "+ identity.surname}} ({{identity.profesion}})
+                  </option>
+                </select>
+              </div>
+            </div>
+          <div class="row">
+            <div class="form-group col-md-6">
+              <label for="derivacion">Derivación</label>
+              <textarea type="text" rows="4" cols="50" name="derivacion" #derivacion="ngModel" [(ngModel)]="diagnostico.derivacion"
+                class="form-control" required></textarea>
+              <small *ngIf="!derivacion.valid && derivacion.touched" class="invalid-feedback d-block">
+                Debe ingresar la derivación
+              </small>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="observacion">Observaciones</label>
+              <textarea rows="4" cols="50" name="observacion" #observacion="ngModel"
+                [(ngModel)]="diagnostico.observacion" class="form-control" required>
+              </textarea>
+            </div>
+          </div>
+          <input type="submit" class="btn btn-success" [disabled]="modelNew.invalid" value="Guardar">
+        </form>
+        <!--fin formulario para crear/actualizar diagnostico-->
+      </div>
+      <div class="modal-footer">
+        <button type="button" (click)="ocultarModal()" class="btn btn-danger">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,248 @@
+<div class="container-fluid">
+<!--migas de pan-->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a [routerLink]="['/Inicio']">Inicio</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Documentos</li>
+  </ol>
+</nav>
+<!--fin migas de pan-->
+<div class="card">
+  <div class="card-body">
+    <div class="row">
+      <!--seccion de input para filtrar los productos-->
+      <div class="col-md-2"></div>
+      <div class="col-md-4">
+      </div>
+      <div class="col-md-3">
+        <select class="form-control" [(ngModel)]="valor" (change)="setValue()">
+          <option value="Activo">Activos</option>
+          <option value="Inactivo">Inactivos</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary btn-sm" (click)="mostrarModal();"><i class="fas fa-pen-square"></i> 
+          Registrar Documentos
+        </button>
+      </div>
+    </div>
+    <br>
+    <!--ya no debemos hacer property binding, dado que utilizará los arreglos del servicio-->
+    <!--<app-product-list [datos]="filterProducts"></app-product-list>-->
+    <div class="card border-primary mb-3 text-center">
+      <div class="card-header"><b>Lista de Documentos</b></div>
+      <div class="card-body text-primary">
+        <div class="table-responsive">
+          <!--llamamos a los nuuevos arreglos declarados en productService, y condicionamos-->
+          <table class="table table-striped">
+            <thead>
+              <!-- esto indica el cabecero de la tabla-->
+              <tr>
+                <th>#</th>
+                <th>Nombre de la estudiante</th>
+                <th>Certificado nacimiento</th>
+                <th>Autorización padres</th>
+                <th>Anamnésis</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!--aqui ocupamos a los arreglos del servicio de entrevistas-->
+              <tr *ngFor="let i of mostrardocumento | paginate: config ;let indice=index">
+                <td>{{indice+1}}</td>
+                <td>{{i.estudiante.nombre +' '+i.estudiante.apellido}}</td>
+                <td><p *ngIf="i.certificado_nac">Si</p> <p *ngIf="!i.certificado_nac">No</p></td>
+                <td><p *ngIf="i.autorizacion_padres">Si</p> <p *ngIf="!i.autorizacion_padres">No</p></td>
+                <td><p *ngIf="i.derivacion">Si</p> <p *ngIf="!i.derivacion">No</p></td>
+                <td>
+                  <button class="btn btn-primary btn-sm"
+                    (click)="mostrarModal(i.id, i.certificado_nac, i.autorizacion_padres, i.derivacion,i.anamnesis,i.pruebas,i.fonoaudiologico,i.protocolos,i.formulario_ingreso,i.valoracion_salud,i.psicopedagogico,i.psicologico,i.neurologico, i.estudiante_id,i.estado);">
+                    <i class="fas fa-pencil-alt"></i> Ver/Editar
+                  </button>
+                  &nbsp;
+                  <button *ngIf="i.estado=='Activo'"  class="btn btn-danger btn-sm" (click)="disableDocumento(i.id)">
+                    <i class="fas fa-ban"></i> Deshabilitar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+            <!--FIN DE BODY-->
+          </table>
+          <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+        </div>
+        <!--FIN DE SECCION TABLA TABLA-->
+      </div>
+      <!--FIN HEADER CARD-->
+    </div>
+    <!--FIN BORDER CARD-->
+  </div>
+
+    <!--modal para registrar/actualizar marca-->
+    <div class="modal" id="exampleModal" [ngStyle]="{'display':activarModal}" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background: #dddddd" >
+          <div class="modal-header">
+            <h5 class="modal-title">Registro de documentos</h5>
+            <button (click)="ocultarModal()" type="button" class="close" data-dismiss="modal">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <!--formulario para crear/actualizar documento-->
+            <form class="col-md-12 ml-0 pl-0" #modelNew="ngForm" (ngSubmit)="onSubmit(modelNew)">
+              <div class="row">
+                <div class="form-group col-md-4">
+                  <label for="certificado_nac">Certificado de nacimiento</label><br>
+                  <select name="certificado_nac" class="form-control" id="certificado_nac" #certificado_nac="ngModel"
+                    [(ngModel)]="documento.certificado_nac" required>
+                    <option  value="0">No</option>
+                    <option  value="1">Si</option>
+                  </select>
+                  <small *ngIf="!certificado_nac.valid && certificado_nac.touched" class="invalid-feedback d-block">
+                    Debe ingresar dato
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="autorizacion_padres">Autorización padres</label><br>
+                  <select name="autorizacion_padres" class="form-control" id="autorizacion_padres" #autorizacion_padres="ngModel"
+                    [(ngModel)]="documento.autorizacion_padres" required>
+                    <option  value="0">No</option>
+                    <option  value="1">Si</option>
+                  </select>
+                  <small *ngIf="!autorizacion_padres.valid && autorizacion_padres.touched" class="invalid-feedback d-block">
+                    Debe ingresar dato
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="derivacion">Derivación</label><br>
+                  <select name="derivacion" class="form-control" id="derivacion" #derivacion="ngModel"
+                    [(ngModel)]="documento.derivacion" required>
+                    <option  value="0">No</option>
+                    <option  value="1">Si</option>
+                  </select>
+                  <small *ngIf="!derivacion.valid && derivacion.touched" class="invalid-feedback d-block">
+                    Debe ingresar dato
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="anamnesis">Anamnesis</label><br>
+                  <select name="anamnesis" class="form-control" id="anamnesis" #anamnesis="ngModel"
+                    [(ngModel)]="documento.anamnesis" required>
+                    <option  value="0">No</option>
+                    <option  value="1">Si</option>
+                  </select>
+                  <small *ngIf="!anamnesis.valid && anamnesis.touched" class="invalid-feedback d-block">
+                    Debe ingresar dato
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="pruebas">Pruebas</label><br>
+                  <select name="pruebas" class="form-control" id="pruebas" #pruebas="ngModel"
+                    [(ngModel)]="documento.pruebas" required>
+                    <option  value="0">No</option>
+                    <option  value="1">Si</option>
+                  </select>
+                  <small *ngIf="!pruebas.valid && pruebas.touched" class="invalid-feedback d-block">
+                    Debe ingresar dato
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="protocolos">Protocolos</label><br>
+                  <select name="protocolos" class="form-control" id="protocolos" #protocolos="ngModel"
+                    [(ngModel)]="documento.protocolos" required>
+                    <option  value="0">No</option>
+                    <option  value="1">Si</option>
+                  </select>
+                  <small *ngIf="!protocolos.valid && protocolos.touched" class="invalid-feedback d-block">
+                    Debe ingresar dato
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="formulario_ingreso">Formulario ingreso</label><br>
+                  <select name="formulario_ingreso" class="form-control" id="formulario_ingreso" #formulario_ingreso="ngModel"
+                    [(ngModel)]="documento.formulario_ingreso" required>
+                    <option  value="0">No</option>
+                    <option  value="1">Si</option>
+                  </select>
+                  <small *ngIf="!formulario_ingreso.valid && formulario_ingreso.touched" class="invalid-feedback d-block">
+                    Debe ingresar dato
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="valoracion_salud">Valoracion salud</label><br>
+                  <select name="valoracion_salud" class="form-control" id="valoracion_salud" #valoracion_salud="ngModel"
+                    [(ngModel)]="documento.valoracion_salud" required>
+                    <option  value="0">No</option>
+                    <option  value="1">Si</option>
+                  </select>
+                  <small *ngIf="!valoracion_salud.valid && valoracion_salud.touched" class="invalid-feedback d-block">
+                    Debe ingresar dato
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="fonoaudiologico">Fonoaudiólogico</label><br>
+                  <select name="fonoaudiologico" class="form-control" id="fonoaudiologico" #fonoaudiologico="ngModel"
+                    [(ngModel)]="documento.fonoaudiologico" required>
+                    <option  value="0">No</option>
+                    <option  value="1">Si</option>
+                  </select>
+                  <small *ngIf="!fonoaudiologico.valid && fonoaudiologico.touched" class="invalid-feedback d-block">
+                    Debe ingresar dato
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="psicologico">Psicológico</label><br>
+                  <select name="psicologico" class="form-control" id="psicologico" #psicologico="ngModel"
+                    [(ngModel)]="documento.psicologico" required>
+                    <option  value="0">No</option>
+                    <option  value="1">Si</option>
+                  </select>
+                  <small *ngIf="!psicologico.valid && psicologico.touched" class="invalid-feedback d-block">
+                    Debe ingresar dato
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="psicopedagogico">Psicopedagógico</label><br>
+                  <select name="psicopedagogico" class="form-control" id="psicopedagogico" #psicopedagogico="ngModel"
+                    [(ngModel)]="documento.psicopedagogico" required>
+                    <option  value="0">No</option>
+                    <option  value="1">Si</option>
+                  </select>
+                  <small *ngIf="!psicopedagogico.valid && psicopedagogico.touched" class="invalid-feedback d-block">
+                    Debe ingresar dato
+                  </small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="neurologico">Neurológico</label><br>
+                  <select name="neurologico" class="form-control" id="neurologico" #neurologico="ngModel"
+                    [(ngModel)]="documento.neurologico" required>
+                    <option  value="0">No</option>
+                    <option  value="1">Si</option>
+                  </select>
+                  <small *ngIf="!neurologico.valid && neurologico.touched" class="invalid-feedback d-block">
+                    Debe ingresar dato
+                  </small>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group col-md-6">
+                  <label for="estudiante_id">Estudiante</label>
+                  <select name="estudiante_id" class="form-control" id="estudiante_id" #estudiante_id="ngModel"
+                    [(ngModel)]="documento.estudiante_id" required>
+                    <option *ngFor="let i of estudiantes" value="{{i.id}}">{{i.nombre +" "+ i.apellido}}</option>
+                  </select>
+                  <small *ngIf="!estudiante_id.valid && estudiante_id.touched" class="invalid-feedback d-block">
+                    Debe ingresar dato
+                  </small>
+                </div>
+              </div>
+              <input value="Guardar" type="submit" class="btn btn-success" [disabled]="modelNew.invalid">
+            </form>
+            <!--fin formulario para crear/actualizar documentos-->
+          </div>
+          <div class="modal-footer">
+            <button type="button" (click)="ocultarModal()" class="btn btn-danger">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
